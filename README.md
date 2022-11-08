@@ -10,7 +10,7 @@
 [![TODOs](https://badgen.net/https/api.tickgit.com/badgen/github.com/ZYallers/gocrypt)](https://www.tickgit.com/browse?repo=github.com/ZYallers/gocrypt)
 [![goproxy.cn](https://goproxy.cn/stats/github.com/ZYallers/gocrypt/badges/download-count.svg)](https://goproxy.cn)
 
-`gocrypt`用Go语言实现了3DES加解密、RSA加解密、RSA私钥加密公钥解密、RSA公钥加密私钥解密。
+`gocrypt`Go实现AES加解密、3DES加解密、RSA加解密（私钥加密公钥解密、公钥加密私钥解密）。
 
 ## 如何使用
 
@@ -23,16 +23,18 @@ $ go get github.com/ZYallers/gocrypt
 2. 使用案例：
 
 ```go
-package main
+package gocrypt
 
 import (
 	"fmt"
+	"github.com/ZYallers/gocrypt/aes"
 	"github.com/ZYallers/gocrypt/des3"
 	"github.com/ZYallers/gocrypt/rsa"
 )
 
 const (
-	des3key = "123456788765432112345678"
+	aesKey  = "I98NTHNPezFnbe8iCaSc1xMPAv8ZtTil"
+	des3key = "PH5yDbhyPCQmKemfdV7S2T8N"
 	pubKey  = `-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA9jxNe1BcLJBbDyeRj80V
 H1cfIs+3nF14EgffwoEa2lx14V4wFSaZQPQTmpS1j2Q9cCLLJC4evdb6jtiZpEDt
@@ -74,61 +76,75 @@ pUPK39jiOO3USu/xOCVYUWJhD0awYzXK36ufd0ZF8uFPzNwleu82XXKVVTaG+7eo
 )
 
 func init() {
-	des3.CBCCrypter.SetDes3Key(des3key)
-	if err := rsa.Crypter.SetPubKey(pubKey); err != nil {
+	aes.CbcCrypto.SetAesKey(aesKey)
+	des3.CbcCrypto.SetDes3Key(des3key)
+	if err := rsa.Crypto.SetPubKey(pubKey); err != nil {
 		panic(err)
 	}
-	if err := rsa.Crypter.SetPriKey(priKey); err != nil {
+	if err := rsa.Crypto.SetPriKey(priKey); err != nil {
 		panic(err)
 	}
 }
 
 func main() {
-	const input = "hello des3"
-	b, err := des3.CBCCrypter.Encrypt([]byte(input))
+	// AES
+	b, err := aes.CbcCrypto.Encrypt([]byte("hello aes"))
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("des3加密=", des3.CBCCrypter.Encode(b))
-	b, err = des3.CBCCrypter.Decrypt(b)
+	fmt.Println("aes encrypt=", aes.CbcCrypto.Encode(b))
+	b, err = aes.CbcCrypto.Decrypt(b)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("des3解密=", des3.CBCCrypter.String(b))
+	fmt.Println("aes decrypt=", aes.CbcCrypto.String(b))
 
-	const input2 = "hello rsa"
-	if bte, err := rsa.Crypter.Encrypt([]byte(input2), rsa.EncryptPubKey); err != nil {
+	// 3DES
+	b, err = des3.CbcCrypto.Encrypt([]byte("hello des3"))
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("des3 encrypt=", des3.CbcCrypto.Encode(b))
+	b, err = des3.CbcCrypto.Decrypt(b)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("des3 decrypt=", des3.CbcCrypto.String(b))
+
+	// RSA
+	if bte, err := rsa.Crypto.Encrypt([]byte("hello rsa"), rsa.PubKeyEncrypt); err != nil {
 		panic(err)
 	} else {
-		fmt.Println("rsa公钥加密=", rsa.Crypter.Encode(bte))
-		if b, err := rsa.Crypter.Decrypt(bte, rsa.DecryptPriKey); err != nil {
+		fmt.Println("rsa public key encrypt=", rsa.Crypto.Encode(bte))
+		if b, err := rsa.Crypto.Decrypt(bte, rsa.PriKeyDecrypt); err != nil {
 			panic(err)
 		} else {
-			fmt.Println("rsa私钥解密=", rsa.Crypter.String(b))
+			fmt.Println("rsa private key decrypt=", rsa.Crypto.String(b))
 		}
 	}
-	if bte, err := rsa.Crypter.Encrypt([]byte(input2), rsa.EncryptPriKey); err != nil {
+	if bte, err := rsa.Crypto.Encrypt([]byte("hello rsa"), rsa.PriKeyEncrypt); err != nil {
 		panic(err)
 	} else {
-		fmt.Println("rsa私钥加密=", rsa.Crypter.Encode(bte))
-		if b, err := rsa.Crypter.Decrypt(bte, rsa.DecryptPubKey); err != nil {
+		fmt.Println("rsa private key encrypt=", rsa.Crypto.Encode(bte))
+		if b, err := rsa.Crypto.Decrypt(bte, rsa.PubKeyDecrypt); err != nil {
 			panic(err)
 		} else {
-			fmt.Println("rsa公钥解密=", rsa.Crypter.String(b))
+			fmt.Println("rsa public key decrypt=", rsa.Crypto.String(b))
 		}
 	}
 }
 ```
 
 运行输出结果：
-
 ```
-des3加密= Le0/5Y6fCSQliYsxt0BvUw==
-des3解密= hello des3
-rsa公钥加密= vl6Tpz5/Li2aiuOp2/UTOoC5jeywf7yQ/MqmMKWPEQbOAhArQoYsatp8QTZSn7I4nbZZnENEirhRImX9N8H6N8JxWPgGH7Qb+yzomGan3GzEgu8A8no2vJqfbhO+d+3kQQlBBtVcTD4fhT/aVwd3SbJAGDKoPV4GauoNvzrz153/cSSgQtaoL53zMiPnwx/ouwfSvRobQ0BRWIpmahqiFRrRu3GBDh4PKjhqNDDdfubWRZqjGEHyIKM7Vh/98XKpLmMLb95gf53ZGV/BhTHKLNjBqeEGjvoz5w9Se8CSngwmKOMdZlA1w9oYY6jLsZJJOz+Cgpgl6jj35zY4gg==
-rsa私钥解密= hello rsa
-rsa私钥加密= Oacl0SwoeeeVcwNroJDz/U/yt42q1h2wPLjazmoOh4wQw2qyct2n0eVfov1RfG8iq41mBsWDYBDyOitHzcLXQyt3xUPv0BVj1+3bsknC8opfpVY35PApS4YBy7SsB0KOl10Avz6gmY7dL1HWwrMsB5ACGgPqXbxdSquVDL3m8/048IbUD2zv/TpVjbx+FymlkGQQOE7+RQQgtONiQEvYhTzF10dHnScjN9D39Nky3HADM+ltXsg5Ld3KDRVNMnjmqyZ4snUEO5RdFTBnGFIpKa0lHazPfL8jQhybp328+gD4lRTOZ9R6POId0Efh6wIbBmchlGZtru27L8TGIA==
-rsa公钥解密= hello rsa
+aes encrypt= DSr41kfl6DuYe0xY1BwhXA==
+aes decrypt= hello aes
+des3 encrypt= XjXiGowut6GsnGpe9Lavjw==
+des3 decrypt= hello des3
+rsa public key encrypt= RT3DJe39wFH5gtn5fA3O1AgMAbTMIL5XNiKYNDQChCtWDVKFL5ePgwHAUKB8wGkgSUVYcaFOeuG7XzF+odJuXgLLe2Xzk0J72E+mDS8yLeYskg9G6LrouaRNFA41uTDk7yPJQjDq3rPgRf8ZjN8u0zU/bYhcQUUp8eZi5Rqk/3zJTPn/bFUTGCo/YzCk+PA7j399K43VvnpqrML0MS1wJZc74ekBVwAKMG44RpnfZa7oWk5sI1V7Z9XAlNZhH0n6WcCMjTUjmI7h8w7RuQiTw5KuEF4D27hyAM0oIiYjTP6Ab9GRp2ISvz2/pUThdMuJdKBuK50wZrKbTExpznf/Ww==
+rsa private key decrypt= hello rsa
+rsa private key encrypt= Oacl0SwoeeeVcwNroJDz/U/yt42q1h2wPLjazmoOh4wQw2qyct2n0eVfov1RfG8iq41mBsWDYBDyOitHzcLXQyt3xUPv0BVj1+3bsknC8opfpVY35PApS4YBy7SsB0KOl10Avz6gmY7dL1HWwrMsB5ACGgPqXbxdSquVDL3m8/048IbUD2zv/TpVjbxa8sZ+FymlkGQQOE7+RQQgtONiQEvYhTzF10dHnScjN9D39Nky3HADM+ltXsg5Ld3KDRVNMnjmqyZ4snUEO5RdFTBnGFIpKa0lHazPfL8jQhybp328+gD4lRTOZ9R6POId0Efh6wIbBmchlGZtru27L8TGIA==
+rsa public key decrypt= hello rsa
 ```
 
 ## License

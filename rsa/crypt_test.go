@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-var PubKey = `-----BEGIN PUBLIC KEY-----
+const pubKey = `-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA9jxNe1BcLJBbDyeRj80V
 H1cfIs+3nF14EgffwoEa2lx14V4wFSaZQPQTmpS1j2Q9cCLLJC4evdb6jtiZpEDt
 tXgtLkvHp3m4ITZqcujavP5UqJNowbsCZEh84GuG7qkaCx1jiTBMEAv3WMj0dwlV
@@ -15,7 +15,7 @@ dgOkRV3WBKT+kEr4nqi/hkLYQSuQiCqRfEi9cZQimVsAdeNsBNQhbHn1+Ai1teoD
 -----END PUBLIC KEY-----
 `
 
-var PriKey = `-----BEGIN PRIVATE KEY-----
+const priKey = `-----BEGIN PRIVATE KEY-----
 MIIEowIBAAKCAQEA9jxNe1BcLJBbDyeRj80VH1cfIs+3nF14EgffwoEa2lx14V4w
 FSaZQPQTmpS1j2Q9cCLLJC4evdb6jtiZpEDttXgtLkvHp3m4ITZqcujavP5UqJNo
 wbsCZEh84GuG7qkaCx1jiTBMEAv3WMj0dwlVhxLlrxlQf22WW+s0LiyuWAsxtAXe
@@ -45,107 +45,105 @@ pUPK39jiOO3USu/xOCVYUWJhD0awYzXK36ufd0ZF8uFPzNwleu82XXKVVTaG+7eo
 `
 
 func TestCrypt_SetPubKey(t *testing.T) {
-	if err := Crypter.SetPubKey(PubKey); err != nil {
+	if err := Crypto.SetPubKey(pubKey); err != nil {
 		t.Error(err)
 	} else {
-		t.Log(Crypter.GetPubKey())
+		t.Log(Crypto.GetPubKey())
 	}
 }
 
 func TestCrypt_SetPriKey(t *testing.T) {
-	if err := Crypter.SetPriKey(PriKey); err != nil {
+	if err := Crypto.SetPriKey(priKey); err != nil {
 		t.Error(err)
 	} else {
-		t.Log(Crypter.GetPriKey())
+		t.Log(Crypto.GetPriKey())
 	}
 }
 
-// 公钥加密私钥解密
 func TestCrypt_EncryptPubKey_DecryptPriKey(t *testing.T) {
-	if err := Crypter.SetPubKey(PubKey); err != nil {
+	if err := Crypto.SetPubKey(pubKey); err != nil {
 		t.Error(err)
 	}
-	if err := Crypter.SetPriKey(PriKey); err != nil {
+	if err := Crypto.SetPriKey(priKey); err != nil {
 		t.Error(err)
 	}
 	const input = "hello rsa"
-	encrypted, err := Crypter.EncryptPubKey([]byte(input))
-	t.Log("EncryptPubKey:", Crypter.Encode(encrypted))
+	encrypted, err := Crypto.PubKeyEncrypt([]byte(input))
+	t.Log("PubKeyEncrypt:", Crypto.Encode(encrypted))
 	if err != nil {
 		t.Error(err)
 	}
 
-	decrypted, err := Crypter.DecryptPriKey(encrypted)
-	t.Log("DecryptPriKey:", Crypter.String(decrypted))
+	decrypted, err := Crypto.PriKeyDecrypt(encrypted)
+	t.Log("PriKeyDecrypt:", Crypto.String(decrypted))
 	if err != nil {
 		t.Error(err)
 	}
 	if string(decrypted) != input {
-		t.Error(`不符合预期`)
+		t.Error("not as expected")
 	}
 }
 
-// 公钥解密私钥加密
 func TestCrypt_EncryptPriKey_DecryptPubKey(t *testing.T) {
-	if err := Crypter.SetPubKey(PubKey); err != nil {
+	if err := Crypto.SetPubKey(pubKey); err != nil {
 		t.Error(err)
 	}
-	if err := Crypter.SetPriKey(PriKey); err != nil {
+	if err := Crypto.SetPriKey(priKey); err != nil {
 		t.Error(err)
 	}
 	const input = "hello rsa"
-	encrypted, err := Crypter.EncryptPriKey([]byte(input))
-	t.Log("EncryptPriKey:", Crypter.Encode(encrypted))
+	encrypted, err := Crypto.PriKeyEncrypt([]byte(input))
+	t.Log("PriKeyEncrypt:", Crypto.Encode(encrypted))
 	if err != nil {
 		t.Error(err)
 	}
-	decrypted, err := Crypter.DecryptPubKey(encrypted)
-	t.Log("DecryptPubKey:", Crypter.String(decrypted))
+	decrypted, err := Crypto.PubKeyDecrypt(encrypted)
+	t.Log("PubKeyDecrypt:", Crypto.String(decrypted))
 	if err != nil {
 		t.Error(err)
 	}
 	if string(decrypted) != input {
-		t.Error(`不符合预期`)
+		t.Error("not as expected")
 	}
 }
 
 func TestCrypt_Encrypt(t *testing.T) {
-	if err := Crypter.SetPubKey(PubKey); err != nil {
+	if err := Crypto.SetPubKey(pubKey); err != nil {
 		t.Error(err)
 	}
-	if err := Crypter.SetPriKey(PriKey); err != nil {
+	if err := Crypto.SetPriKey(priKey); err != nil {
 		t.Error(err)
 	}
 	var input = []byte("hello rsa")
-	if bte, err := Crypter.Encrypt(input, EncryptPubKey); err != nil {
+	if bte, err := Crypto.Encrypt(input, PubKeyEncrypt); err != nil {
 		t.Error(err)
 	} else {
-		t.Log("EncryptPubKey", Crypter.Encode(bte))
+		t.Log("PubKeyEncrypt", Crypto.Encode(bte))
 	}
-	if bte, err := Crypter.Encrypt(input, EncryptPriKey); err != nil {
+	if bte, err := Crypto.Encrypt(input, PriKeyEncrypt); err != nil {
 		t.Error(err)
 	} else {
-		t.Log("EncryptPriKey", Crypter.Encode(bte))
+		t.Log("PriKeyEncrypt", Crypto.Encode(bte))
 	}
 }
 
 func TestCrypt_Decrypt(t *testing.T) {
-	if err := Crypter.SetPubKey(PubKey); err != nil {
+	if err := Crypto.SetPubKey(pubKey); err != nil {
 		t.Error(err)
 	}
-	if err := Crypter.SetPriKey(PriKey); err != nil {
+	if err := Crypto.SetPriKey(priKey); err != nil {
 		t.Error(err)
 	}
 	s := "Oacl0SwoeeeVcwNroJDz/U/yt42q1h2wPLjazmoOh4wQw2qyct2n0eVfov1RfG8iq41mBsWDYBDyOitHzcLXQyt3xUPv0BVj1+3bsknC8opfpVY35PApS4YBy7SsB0KOl10Avz6gmY7dL1HWwrMsB5ACGgPqXbxdSquVDL3m8/048IbUD2zv/TpVjbxa8sZ+FymlkGQQOE7+RQQgtONiQEvYhTzF10dHnScjN9D39Nky3HADM+ltXsg5Ld3KDRVNMnjmqyZ4snUEO5RdFTBnGFIpKa0lHazPfL8jQhybp328+gD4lRTOZ9R6POId0Efh6wIbBmchlGZtru27L8TGIA=="
-	if bte, err := Crypter.Decrypt(Crypter.Decode(s), DecryptPubKey); err != nil {
+	if bte, err := Crypto.Decrypt(Crypto.Decode(s), PubKeyDecrypt); err != nil {
 		t.Error(err)
 	} else {
-		t.Log("DecryptPubKey", Crypter.String(bte))
+		t.Log("PubKeyDecrypt", Crypto.String(bte))
 	}
 	s = "H854jxBGVu5EUwJRsdWlGLO8Q1QST/gzUG24sqQkqts5G/FhMpBubapsnyfTAbnz16I6MQDvCGKBQG1fGfDDJHi3XJjhLKpjGODJRuY8LQWgMttbuzi3RxmtpYppiwqHVl/VPl+7Elz0vpaN0Z2OLTrdHDc+Xq6V2ZiqD3xVMeFHqIbRFOGK+DGyTvKtsbri0fgTt5AdDxAtKUMQwQx2PKHre1OqQJGTq6Mwv6QUJj/BwcQ4e8r1qu6a6i9F3JojJXlekZsMrAt1YwJPlyukSyZbu7q1d1BfCxGE0K44W3T+Yiida6pXpPY+qYJyw2G68FZjQlLNK3vtCHS5w2WGkw=="
-	if bte, err := Crypter.Decrypt(Crypter.Decode(s), DecryptPriKey); err != nil {
+	if bte, err := Crypto.Decrypt(Crypto.Decode(s), PriKeyDecrypt); err != nil {
 		t.Error(err)
 	} else {
-		t.Log("DecryptPriKey", Crypter.String(bte))
+		t.Log("PriKeyDecrypt", Crypto.String(bte))
 	}
 }
