@@ -35,7 +35,7 @@ func des3Encrypt(data, des3key []byte) (encrypted []byte, encryptErr error) {
 	if encryptErr != nil {
 		return
 	}
-	encryptBytes := gocrypt.Pkcs5Padding(data, block.BlockSize())
+	encryptBytes := gocrypt.PKCS7Padding(data, block.BlockSize())
 	blockMode := cipher.NewCBCEncrypter(block, des3key[:des.BlockSize])
 	encrypted = make([]byte, len(encryptBytes))
 	blockMode.CryptBlocks(encrypted, encryptBytes)
@@ -51,6 +51,6 @@ func des3Decrypt(data, des3key []byte) (decrypted []byte, decryptErr error) {
 	blockMode := cipher.NewCBCDecrypter(block, des3key[:des.BlockSize])
 	decrypted = make([]byte, len(data))
 	blockMode.CryptBlocks(decrypted, data)
-	decrypted = gocrypt.Pkcs5UnPadding(decrypted)
+	decrypted = gocrypt.PKCS7UnPadding(decrypted)
 	return
 }
