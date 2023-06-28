@@ -36,7 +36,7 @@ func aesEncrypt(data, aesKey []byte) (encrypted []byte, encryptErr error) {
 		return
 	}
 	blockSize := block.BlockSize()
-	encryptBytes := gocrypt.Pkcs5Padding(data, blockSize)
+	encryptBytes := gocrypt.PKCS7Padding(data, blockSize)
 	blockMode := cipher.NewCBCEncrypter(block, aesKey[:blockSize])
 	encrypted = make([]byte, len(encryptBytes))
 	blockMode.CryptBlocks(encrypted, encryptBytes)
@@ -53,6 +53,6 @@ func aesDecrypt(data, aesKey []byte) (decrypted []byte, decryptErr error) {
 	blockMode := cipher.NewCBCDecrypter(block, aesKey[:blockSize])
 	decrypted = make([]byte, len(data))
 	blockMode.CryptBlocks(decrypted, data)
-	decrypted = gocrypt.Pkcs5UnPadding(decrypted)
+	decrypted = gocrypt.PKCS7UnPadding(decrypted)
 	return
 }

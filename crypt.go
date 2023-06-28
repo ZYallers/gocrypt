@@ -5,13 +5,13 @@ import (
 	"fmt"
 )
 
-func Pkcs5Padding(data []byte, blockSize int) []byte {
+func PKCS7Padding(data []byte, blockSize int) []byte {
 	padding := blockSize - len(data)%blockSize
 	padText := bytes.Repeat([]byte{byte(padding)}, padding)
 	return append(data, padText...)
 }
 
-func Pkcs5UnPadding(data []byte) []byte {
+func PKCS7UnPadding(data []byte) []byte {
 	length := len(data)
 	unPadding := int(data[length-1])
 	return data[:(length - unPadding)]
