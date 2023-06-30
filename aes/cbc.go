@@ -17,19 +17,19 @@ func (c *Cbc) SetAesKey(aesKey string) {
 	c.aesKey = []byte(aesKey)
 }
 
-func (c *Cbc) Encrypt(input []byte) (encByte []byte, encErr error) {
+func (c *Cbc) Encrypt(input, iv []byte) (encByte []byte, encErr error) {
 	defer gocrypt.RecoverError(&encErr)
-	encByte, encErr = aesEncrypt(input, c.aesKey)
+	encByte, encErr = aesEncrypt(input, c.aesKey, iv)
 	return
 }
 
-func (c *Cbc) Decrypt(input []byte) (decByte []byte, decErr error) {
+func (c *Cbc) Decrypt(input, iv []byte) (decByte []byte, decErr error) {
 	defer gocrypt.RecoverError(&decErr)
-	decByte, decErr = aesDecrypt(input, c.aesKey)
+	decByte, decErr = aesDecrypt(input, c.aesKey, iv)
 	return
 }
 
-func aesEncrypt(data, aesKey []byte) (encrypted []byte, encryptErr error) {
+func aesEncrypt(data, aesKey, iv []byte) (encrypted []byte, encryptErr error) {
 	defer gocrypt.RecoverError(&encryptErr)
 	block, encryptErr := aes.NewCipher(aesKey)
 	if encryptErr != nil {
@@ -37,20 +37,26 @@ func aesEncrypt(data, aesKey []byte) (encrypted []byte, encryptErr error) {
 	}
 	blockSize := block.BlockSize()
 	encryptBytes := gocrypt.PKCS7Padding(data, blockSize)
-	blockMode := cipher.NewCBCEncrypter(block, aesKey[:blockSize])
+	if len(iv) == 0 {
+		iv = aesKey[:blockSize]
+	}
+	blockMode := cipher.NewCBCEncrypter(block, iv)
 	encrypted = make([]byte, len(encryptBytes))
 	blockMode.CryptBlocks(encrypted, encryptBytes)
 	return
 }
 
-func aesDecrypt(data, aesKey []byte) (decrypted []byte, decryptErr error) {
+func aesDecrypt(data, aesKey, iv []byte) (decrypted []byte, decryptErr error) {
 	defer gocrypt.RecoverError(&decryptErr)
 	block, decryptErr := aes.NewCipher(aesKey)
 	if decryptErr != nil {
 		return
 	}
 	blockSize := block.BlockSize()
-	blockMode := cipher.NewCBCDecrypter(block, aesKey[:blockSize])
+	if len(iv) == 0 {
+		iv = aesKey[:blockSize]
+	}
+	blockMode := cipher.NewCBCDecrypter(block, iv)
 	decrypted = make([]byte, len(data))
 	blockMode.CryptBlocks(decrypted, data)
 	decrypted = gocrypt.PKCS7UnPadding(decrypted)
