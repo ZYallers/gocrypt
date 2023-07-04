@@ -9,11 +9,11 @@ func (b *Base64) Encode(bytes []byte) string {
 	return base64.StdEncoding.EncodeToString(bytes)
 }
 
-func (b *Base64) Decode(s string) []byte {
-	if bytes, err := base64.StdEncoding.DecodeString(s); err != nil {
-		return nil
+func (b *Base64) Decode(s string) ([]byte, error) {
+	if dec, err := base64.StdEncoding.DecodeString(s); err != nil {
+		return nil, err
 	} else {
-		return bytes
+		return dec, nil
 	}
 }
 

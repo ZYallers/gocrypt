@@ -13,14 +13,25 @@ func init() {
 
 func TestCbc_Decrypt(t *testing.T) {
 	input := "/LJvP0J/zOcvjWq9jktEbUBiz6nxqLcN+/79HCl8pnaY6b/R/e0HFPfSq4OkRXaz9Jv96Vb31dQRFeY9O5QWJoC+sm3adEY5FJh2nzqy3Hstg6Gh9JzThsYdGYTFlsADWGX76thaj3f3SZ3uAq/IJQ=="
-	if b, err := CbcCrypto.Decrypt(CbcCrypto.Decode(input), nil); err != nil {
+	decByte, err := CbcCrypto.Decode(input)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if b, err := CbcCrypto.Decrypt(decByte, nil); err != nil {
 		t.Error(err)
 	} else {
 		t.Log(CbcCrypto.String(b))
 	}
+
 	iv := []byte(strings.Repeat("8", 16))
 	input = "gO4OXKHKe+pao1++YTspD1zobhjPAexMDGwyMRxO1oj2I3bOlX9tZgnRNgIryAgKxq8F9XgBQuLkT6Qx6nuGEgqo3ryhuMBTRttpwlXupT5ZCwCUCAR++R7YRFJu46pJnkJYAtmX6m++OAs34NKKyg=="
-	if b, err := CbcCrypto.Decrypt(CbcCrypto.Decode(input), iv); err != nil {
+	decByte, err = CbcCrypto.Decode(input)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if b, err := CbcCrypto.Decrypt(decByte, iv); err != nil {
 		t.Error(err)
 	} else {
 		t.Log(CbcCrypto.String(b))
