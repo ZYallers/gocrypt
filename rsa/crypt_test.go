@@ -67,6 +67,7 @@ func TestCrypt_EncryptPubKey_DecryptPriKey(t *testing.T) {
 	if err := Crypto.SetPriKey(priKey); err != nil {
 		t.Error(err)
 	}
+	
 	const input = "hello rsa"
 	encrypted, err := Crypto.PubKeyEncrypt([]byte(input))
 	t.Log("PubKeyEncrypt:", Crypto.Encode(encrypted))
@@ -91,12 +92,14 @@ func TestCrypt_EncryptPriKey_DecryptPubKey(t *testing.T) {
 	if err := Crypto.SetPriKey(priKey); err != nil {
 		t.Error(err)
 	}
+
 	const input = "hello rsa"
 	encrypted, err := Crypto.PriKeyEncrypt([]byte(input))
 	t.Log("PriKeyEncrypt:", Crypto.Encode(encrypted))
 	if err != nil {
 		t.Error(err)
 	}
+
 	decrypted, err := Crypto.PubKeyDecrypt(encrypted)
 	t.Log("PubKeyDecrypt:", Crypto.String(decrypted))
 	if err != nil {
@@ -114,12 +117,14 @@ func TestCrypt_Encrypt(t *testing.T) {
 	if err := Crypto.SetPriKey(priKey); err != nil {
 		t.Error(err)
 	}
+
 	var input = []byte("hello rsa")
 	if bte, err := Crypto.Encrypt(input, PubKeyEncrypt); err != nil {
 		t.Error(err)
 	} else {
 		t.Log("PubKeyEncrypt", Crypto.Encode(bte))
 	}
+
 	if bte, err := Crypto.Encrypt(input, PriKeyEncrypt); err != nil {
 		t.Error(err)
 	} else {
@@ -134,14 +139,26 @@ func TestCrypt_Decrypt(t *testing.T) {
 	if err := Crypto.SetPriKey(priKey); err != nil {
 		t.Error(err)
 	}
+
 	s := "Oacl0SwoeeeVcwNroJDz/U/yt42q1h2wPLjazmoOh4wQw2qyct2n0eVfov1RfG8iq41mBsWDYBDyOitHzcLXQyt3xUPv0BVj1+3bsknC8opfpVY35PApS4YBy7SsB0KOl10Avz6gmY7dL1HWwrMsB5ACGgPqXbxdSquVDL3m8/048IbUD2zv/TpVjbxa8sZ+FymlkGQQOE7+RQQgtONiQEvYhTzF10dHnScjN9D39Nky3HADM+ltXsg5Ld3KDRVNMnjmqyZ4snUEO5RdFTBnGFIpKa0lHazPfL8jQhybp328+gD4lRTOZ9R6POId0Efh6wIbBmchlGZtru27L8TGIA=="
-	if bte, err := Crypto.Decrypt(Crypto.Decode(s), PubKeyDecrypt); err != nil {
+	decByte, err := Crypto.Decode(s)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if bte, err := Crypto.Decrypt(decByte, PubKeyDecrypt); err != nil {
 		t.Error(err)
 	} else {
 		t.Log("PubKeyDecrypt", Crypto.String(bte))
 	}
+
 	s = "H854jxBGVu5EUwJRsdWlGLO8Q1QST/gzUG24sqQkqts5G/FhMpBubapsnyfTAbnz16I6MQDvCGKBQG1fGfDDJHi3XJjhLKpjGODJRuY8LQWgMttbuzi3RxmtpYppiwqHVl/VPl+7Elz0vpaN0Z2OLTrdHDc+Xq6V2ZiqD3xVMeFHqIbRFOGK+DGyTvKtsbri0fgTt5AdDxAtKUMQwQx2PKHre1OqQJGTq6Mwv6QUJj/BwcQ4e8r1qu6a6i9F3JojJXlekZsMrAt1YwJPlyukSyZbu7q1d1BfCxGE0K44W3T+Yiida6pXpPY+qYJyw2G68FZjQlLNK3vtCHS5w2WGkw=="
-	if bte, err := Crypto.Decrypt(Crypto.Decode(s), PriKeyDecrypt); err != nil {
+	decByte, err = Crypto.Decode(s)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if bte, err := Crypto.Decrypt(decByte, PriKeyDecrypt); err != nil {
 		t.Error(err)
 	} else {
 		t.Log("PriKeyDecrypt", Crypto.String(bte))
